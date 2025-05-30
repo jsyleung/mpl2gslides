@@ -1,0 +1,57 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+
+# Virtual environments
+venv/
+.env/
+env/
+.venv/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Logs and debug
+*.log
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE / editor configs
+.vscode/
+.idea/
+
+# Auth & config
+credentials.json
+token.json
+
+# Python test output
+.coverage
+.cache/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+
+# Pylint/mypy reports
+.mypy_cache/
+.pylint.d/
+
+# Local installs
+*.egg
+pip-wheel-metadata/
+
+# Mac/Linux Finder/Trash metadata
+.Trash-*/
+
+# Your package or examples
+examples/__pycache__/

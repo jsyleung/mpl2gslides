@@ -63,14 +63,10 @@ def create_line_request(x1, y1, x2, y2, color_rgba, object_id, slide_id, unit="P
 
     return request
 
-def group_segments(segment_ids, line_index, session_id=None):
-    if session_id is None:
-        session_id = uuid.uuid4().hex[:6]
-    group_id = f"group_{line_index}_{session_id}"
-
+def create_group_request(children_ids, group_id):
     request = [{
         "groupObjects": {
-            "childrenObjectIds": segment_ids,
+            "childrenObjectIds": children_ids,
             "groupObjectId": group_id
         }
     }]
@@ -118,7 +114,7 @@ def plot_to_api_requests(ax, slide_id, session_id=None):
             requests.append(create_line_request(x_pts[0], y_pts[0], x_pts[1], y_pts[1], color, object_id, slide_id))
 
         # Group all grid lines together
-        requests.append(group_segments(line_ids, "grid", session_id))
+        requests.append(create_group_request(line_ids, f"grid_{session_id}"))
 
     # Plot lines
     for i, line in enumerate(ax.get_lines()):
@@ -134,6 +130,6 @@ def plot_to_api_requests(ax, slide_id, session_id=None):
             object_id = f"line_{i}_{k}_{session_id}"
             segment_ids.append(object_id)
             requests.append(create_line_request(x_pts[k], y_pts[k], x_pts[k + 1], y_pts[k + 1], color, object_id, slide_id))
-        requests.append(group_segments(segment_ids, i, session_id))
+        requests.append(create_group_request(segment_ids, f"line_{i}_{session_id}"))
 
     return requests

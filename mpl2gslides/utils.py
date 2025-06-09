@@ -1,5 +1,8 @@
 import numpy as np
 
+def points_to_pixels(points, dpi):
+    return points * dpi / 72
+
 def data_to_slide_coords(ax, x, y, slide_width_pt=720, slide_height_pt=405):
     xlim = ax.get_xlim()
     ylim = ax.get_ylim()

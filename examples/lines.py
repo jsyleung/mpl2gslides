@@ -20,6 +20,7 @@ slide_id = ms.add_blank_slide(service, presentation_id)
 fig, ax = plt.subplots()
 ax.plot([0, 1, 2, 3, 4], [0, 1, 0.4, 0.7, 0.2], color="C0")
 ax.plot([0, 1, 2, 3, 4], [1, 0, 0.3, 0.3, 0.9], color="C1")
+ax.errorbar([1, 2, 3], [2, 3, 2], yerr=[0.3, 0.5, 0.2], capsize=1)
 requests = ms.plot_to_api_requests(ax, slide_id=slide_id)
 plt.close(fig)
 

@@ -6,7 +6,6 @@ from .utils import points_to_pixels, data_to_slide_coords
 def create_line_request(x1, y1, x2, y2, color_rgba, object_id, slide_id, unit="PT"):
     dx = x2 - x1
     dy = y2 - y1
-    red, green, blue = color_rgba[:3]
 
     if dx == 0 and dy == 0:
         raise ValueError("Start and end points are the same.")
@@ -49,9 +48,9 @@ def create_line_request(x1, y1, x2, y2, color_rgba, object_id, slide_id, unit="P
                     "solidFill": {
                         "color": {
                             "rgbColor": {
-                                "red": red,
-                                "green": green,
-                                "blue": blue
+                                "red": color_rgba[0],
+                                "green": color_rgba[1],
+                                "blue": color_rgba[2]
                             }
                         }
                     }
@@ -150,7 +149,7 @@ def plot_to_api_requests(ax, slide_id, session_id=None):
 
         # Draw barlines
         ybars = bars[0].get_segments()
-        color = mcolors.to_rgb(bars[0].get_edgecolor())
+        color = mcolors.to_rgba(bars[0].get_edgecolor())
         for k, seg in enumerate(ybars):
             x, y1 = seg[0]  # bottom
             _, y2 = seg[1]  # top
@@ -170,7 +169,7 @@ def plot_to_api_requests(ax, slide_id, session_id=None):
         if caps_bottom.get_marker() is not None:
             x, y = caps_bottom.get_data()
             sx, sy = data_to_slide_coords(ax, x, y)
-            color = mcolors.to_rgb(caps_bottom.get_color())
+            color = mcolors.to_rgba(caps_bottom.get_color())
             markersize = points_to_pixels(caps_bottom.get_markersize(), ax.figure.dpi)
             segments = [(_x - markersize , _x + markersize) for _x in sx]
             for k, s in enumerate(segments):
@@ -181,7 +180,7 @@ def plot_to_api_requests(ax, slide_id, session_id=None):
         if caps_top.get_marker() is not None:
             x, y = caps_top.get_data()
             sx, sy = data_to_slide_coords(ax, x, y)
-            color = mcolors.to_rgb(caps_top.get_color())
+            color = mcolors.to_rgba(caps_top.get_color())
             markersize = points_to_pixels(caps_top.get_markersize(), ax.figure.dpi)
             segments = [(_x - markersize , _x + markersize) for _x in sx]
             for k, s in enumerate(segments):

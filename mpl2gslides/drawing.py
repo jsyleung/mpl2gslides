@@ -63,6 +63,51 @@ def create_line_request(x1, y1, x2, y2, color_rgba, object_id, slide_id, unit="P
 
     return request
 
+def create_marker_request(x, y, size, color_rgba, object_id, slide_id, marker_type="ELLIPSE", unit="PT"):
+    request = []
+    request.append({
+        "createShape": {
+            "objectId": object_id,
+            "shapeType": marker_type,
+            "elementProperties": {
+                "pageObjectId": slide_id,
+                "size": {
+                    "width": {"magnitude": size, "unit": unit},
+                    "height": {"magnitude": size, "unit": unit},
+                },
+                "transform": {
+                    "scaleX": 1,
+                    "scaleY": 1,
+                    "shearX": 0,
+                    "shearY": 0,
+                    "translateX": x - size/2,
+                    "translateY": y - size/2,
+                    "unit": unit
+                }
+            }
+        }
+    })
+    request.append({
+        "updateShapeProperties": {
+            "objectId": object_id,
+            "shapeProperties": {
+                "shapeBackgroundFill": {
+                    "solidFill": {
+                        "color": {
+                            "rgbColor": {
+                                "red": color_rgba[0],
+                                "green": color_rgba[1],
+                                "blue": color_rgba[2]
+                            }
+                        }
+                    }
+                }
+            },
+            "fields": "shapeBackgroundFill.solidFill.color"
+        }
+    })
+    return request
+
 def create_group_request(children_ids, group_id):
     request = [{
         "groupObjects": {
@@ -119,9 +164,6 @@ def plot_to_api_requests(ax, slide_id, session_id=None):
 
     # Plot lines
     for i, line in enumerate(ax.get_lines()):
-        if line.get_linestyle() == 'None':
-            continue
-
         x_data = line.get_xdata()
         y_data = line.get_ydata()
         color = mcolors.to_rgba(line.get_color())
@@ -130,12 +172,25 @@ def plot_to_api_requests(ax, slide_id, session_id=None):
 
         # Each segment of the line must be added separately
         segment_ids = []
-        for k in range(len(x_data) - 1):
-            object_id = f"line_{i}_{k}_{session_id}"
-            segment_ids.append(object_id)
-            requests.append(create_line_request(x_pts[k], y_pts[k], x_pts[k + 1], y_pts[k + 1], color, object_id, slide_id))
-        group_ids[line] = f"line_{i}_{session_id}"
-        requests.append(create_group_request(segment_ids, group_ids[line]))
+        if line.get_linestyle() != 'None':
+            for k in range(len(x_data) - 1):
+                segment_id = f"line_{i}_{k}_{session_id}"
+                segment_ids.append(segment_id)
+                requests.append(create_line_request(x_pts[k], y_pts[k], x_pts[k + 1], y_pts[k + 1], color, segment_id, slide_id))
+
+        # Markers
+        marker_ids = []
+        if line.get_marker() not in ['None', ' ', '']:
+            size = line.get_markersize()
+            for k, (x, y) in enumerate(zip(x_pts, y_pts)):
+                marker_id = f"marker_{i}_{k}_{session_id}"
+                marker_ids.append(marker_id)
+                requests.append(create_marker_request(x, y, size, color, marker_id, slide_id))
+
+        # Group
+        if len(segment_ids + marker_ids) > 0:
+            group_ids[line] = f"line_{i}_{session_id}"
+            requests.append(create_group_request(segment_ids + marker_ids, group_ids[line]))
 
     # Error bars and caps
     errs = [c for c in ax.containers if isinstance(c, mcont.ErrorbarContainer)]

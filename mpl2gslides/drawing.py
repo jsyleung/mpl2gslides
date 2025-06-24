@@ -1,5 +1,6 @@
 import matplotlib.colors as mcolors
 import matplotlib.container as mcont
+import matplotlib.collections as mcoll
 import uuid
 from .utils import points_to_pixels, data_to_slide_coords
 
@@ -245,5 +246,31 @@ def plot_to_api_requests(ax, slide_id, session_id=None):
                     requests.append(create_line_request(s[0], sy[k], s[1], sy[k], color, object_id_top, slide_id))
 
         requests.append(create_group_request(segment_ids, f"errorbar_{i}_{session_id}"))
+
+    # Scatter plots
+    scts = [c for c in ax.collections if isinstance(c, mcoll.PathCollection)]
+    for i, sc in enumerate(scts):
+        x_data, y_data = sc.get_offsets().T
+        x_pts, y_pts = data_to_slide_coords(ax, x_data, y_data)
+
+        # Marker sizes for every point; convert dtype to native Python float for JSON renderer
+        sizes = sc.get_sizes()
+        if len(sizes) == 1 and len(x_data) > 1:
+            sizes = [float(sizes[0])] * len(x_data)
+        else:
+            sizes = [float(s) for s in sizes]
+
+        # Colours for every point
+        colors = sc.get_facecolor()
+        if len(colors) == 1 and len(x_data) > 1:
+            colors = [colors[0]] * len(x_data)
+
+        marker_ids = []
+        for k, (x, y) in enumerate(zip(x_pts, y_pts)):
+            obj_id = f"scatter_{i}_{k}_{session_id}"
+            marker_ids.append(obj_id)
+            requests.append(create_marker_request(x, y, sizes[k], colors[k], obj_id, slide_id))
+
+        requests.append(create_group_request(marker_ids, f"scatter_{i}_{session_id}"))
 
     return requests
